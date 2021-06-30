@@ -1,17 +1,42 @@
+# Utility file for Time Series Analysis
+
+# 1 - visualize time series
+# 2 - stationary check
+# 3 - decompostion
+# 4 - detrend method
+# 5 - ACF & PACF
+# 6 - evaluate
+
+# General
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-%matplotlib inline
 
-from statsmodels.tsa.stattools import adfuller
+# sklearn
+from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
 
-from pmdarima.utils import decomposed_plot
+# pmdarima
+import pmdarima as pm
 from pmdarima.arima import decompose
+from pmdarima.utils import decomposed_plot
+from pmdarima.arima.stationarity import ADFTest
+from pmdarima.arima.utils import ndiffs
+from pmdarima import model_selection
 
+# statsmodels
 import statsmodels.api as sm
+from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.seasonal import seasonal_decompose
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.tsa.arima_model import ARIMA
 
 
+
+# 1
 def visualize_time_series(TS):
+    '''
+    TS: Time Series
+    '''
     TS.plot(figsize=(15,9))
     plt.title("Close")
     plt.ylabel("Price")
@@ -19,11 +44,14 @@ def visualize_time_series(TS):
 
 
 
-def stationary_check(TS, window_size):
+# 2
+def stationary_check_statsmodels(TS, window_size):
     '''
+    statsmodels
+    
     TS: Time Series
     
-    window_size
+    window_size: parameter for window
     
     '''
     
@@ -60,25 +88,48 @@ def stationary_check(TS, window_size):
         
     print('Results of Dickey-Fuller test: \n')
     print(dfoutput)
+  
     
-    
-
-
-def decomposition_plot(TS, frequency):
+def stationary_check_pmdarima(TS):
     '''
+    pmdarima
+    TS: time series
+    
+    '''
+    
+    adf_test = ADFTest(alpha=0.05)
+    p_val, should_diff = adf_test.should_diff(TS) 
+
+    print(f"P-Value: {p_val}, so should you difference the data? {should_diff}")
+
+
+    
+# 3
+def decomposition_plot_pmdarima(TS, frequency):
+    '''
+    pmdarima
+    
     TS: Time Series
+    
+    frequency: parameter for m
     '''
     # Use decompose function from pmdarima
-    decomposed = decompose(TS.values, 'multiplicative', m=frequency) # use "multiplicative" when see an increasing trend
-    
+    decomposed = decompose(TS.values, 'multiplicative', m=frequency)
+                                      # use "multiplicative" when see an increasing trend
     # Plot the decomposition plot
     decomposed_plot(decomposed, figure_kwargs={'figsize': (12,10)})
     
-
+ 
+def decomposition_plot_statsmodels(TS, frequency):
+    '''
+    statsmodels
     
-def decomposition_plot_2(TS, frequency):
+    TS: Time Series
+    
+    frequency: parameter for freq
+    '''
+    
     decomposition = seasonal_decompose(TS, freq=frequency)
-
 
     # Gather the trend, seasonality, and residuals 
     trend = decomposition.trend
@@ -106,7 +157,16 @@ def decomposition_plot_2(TS, frequency):
     plt.tight_layout()
 
 
-def detrend_transformation(TS, log=True, sqrt=True):
+
+# 4
+def detrend_transformation(TS, log=False, sqrt=False):
+    '''
+    Log Transformation
+    
+    Sqrt Transformation
+    
+    '''
+    
     if log == True:
         TS_log = np.log(TS)
         return TS_log
@@ -120,7 +180,14 @@ def detrend_transformation(TS, log=True, sqrt=True):
         return None
         
 
-def detrend_rolling_mean(TS, regular=True, window_size=None, half_life=None):
+def detrend_rolling_mean(TS, regular=False, window_size=None, half_life=None):
+    '''
+    Subtract rolling mean
+    
+    Subtranct exponential rolling mean
+    
+    '''
+    
     if regular == True:
         rolling_mean = TS.rolling(window=window_size).mean()
             
@@ -137,7 +204,33 @@ def detrend_rolling_mean(TS, regular=True, window_size=None, half_life=None):
     
 
 def detrend_differencing(TS, periods):
+    '''
+    Just differencing method
+    
+    '''
     
     TS_diff = TS.diff(periods=periods)
     TS_diff.dropna(inplace=True)
     return TS_diff
+
+
+
+# 5
+def plot_ACF_PACF(TS):
+    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(18,4))
+    plot_acf(TS, ax=ax1, lags=25)
+    plot_pacf(TS, ax=ax2, lags=25)
+
+def pd_ACF(TS):
+    pd.plotting.autocorrelation_plot(TS)
+
+
+
+# 6
+def evaluate(y_true, y_pred):
+    MSE = mean_squared_error(y_true, y_pred)
+    MAE = mean_absolute_error(y_true, y_pred)
+    MAPE = mean_absolute_percentage_error(y_true, y_pred)
+    print("MSE: %.3f " % MSE)
+    print("MAE: %.3f" % MAE)
+    print("MAPE:%.3f " % MAPE)
