@@ -10,6 +10,7 @@ For additional information please contact, JingYun (Jonna) Wang at jingyunwang24
 ```
 ├── data
 ├── images
+├── models
 ├── notebook
 ├── Notebook.ipynb
 ├── Presentation.pdf
