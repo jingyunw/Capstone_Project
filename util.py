@@ -1,11 +1,9 @@
 # Utility file for Time Series Analysis #
 
 
-## Fetch Data from Yahoo Finance ##
-# 1 - select ticker
-# 2 - get stock data
-# 3 - get data (put multiple data in a single dataframe)
+## Preprocessing ##
 
+## Sklearn Evaluation ##
 
 ## ARIMA ##
 # 1 - visualize time series
@@ -13,9 +11,6 @@
 # 3 - decompostion
 # 4 - detrend method
 # 5 - ACF & PACF
-
-
-## Sklearn Evaluation ##
 
 
 
@@ -32,9 +27,6 @@ import matplotlib.pyplot as plt
 
 # sklearn
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
-# Yahoo Finance
-import yfinance as yf
 
 # pmdarima
 import pmdarima as pm
@@ -53,84 +45,60 @@ from statsmodels.tsa.arima_model import ARIMA
 
 
 
-#####################################
-#   Fetch Data from Yahoo Finance   #
-#####################################
+#####################
+#   Preprocessing   #
+#####################
 
-# 1
-def select_ticker(symbols, year):
+def preprocess_df(df):
     '''
-    Select ticker only fulfilled the requirement
-    year:
-    ex. 2011 => that stock has at least 2021-2011 = 10 years of hisory
+    Preprocess the dataframe by changing the "Date" column to datetime64 and set as index. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
+    Input:
+    - df: Panda dataframe
+    
+    Output:
+    - Panda dataframe with date as index
     '''
-    
-    timestamps = []
-    incep_year = []
-    
-    for symbol in symbols:
-        # Acquire the inception date for each ticker
-        timestamps.append(yf.Ticker(symbol).info.get('fundInceptionDate'))
-    
-    for timestamp in timestamps: 
-        # Convert epoch unix to readable dates
-        incep_year.append(pd.to_datetime(timestamp, unit='s').year)
-    
-    # Create a dictionary to pair the ticker with corresponding year
-    ticker_dict = dict(zip(symbols, incep_year))
-    
-    # Create a ticker df
-    ticker_df = pd.DataFrame(list(ticker_dict.items()), columns=['symbol', 'start_year'])
-    
-    # Select desire ticker based on inception date
-    new_ticker_df = ticker_df.loc[ticker_df['start_year'] <= year]
-    
-    new_ticker_list = new_ticker_df['symbol'].tolist()
-                                                     
-    return new_ticker_list
-                                                     
-                                                                                                         
-# 2                                                     
-def get_stock_data(symbols):
-    '''
-    Acquire the historical data from Yahoo Finance
-    for provided stock symbol
-    '''
-    
-    # Access ticker data
-    ticker = yf.Ticker(symbols)
-    
-    # Get historical market data
-    data = ticker.history(period='max')
-    
-    return data
+
+    # Convert Date column to datetime64 type
+    df['Date'] = pd.to_datetime(df['Date'])
+
+    # Set index to a datetime index
+    df.set_index('Date', inplace=True)
+    print("This dataframe's index is in datatime64?", df.index.inferred_type == "datetime64")
+    # Check
+    display(df)
 
 
-# 3
-def get_data(symbols):
+
+
+#########################
+#   Sklearn Evalution   #
+#########################
+
+def evaluate(y_true, y_pred):
     '''
-    Acquire the data by calling previous function
-    Concatenate the dataframe
+    Evaluate between true y and predicted y. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
+    Inputs:
+    - y_true, y_pred: true y and predicted y
+    
+    Outputs:
+    - Evalution results for true y and predicted y
+        - MAE, RMSE, and R^2
     '''
+
+    MAE = mean_absolute_error(y_true, y_pred)
+    RMSE = mean_squared_error(y_true, y_pred, squared=False)
+    R2 = r2_score(y_true, y_pred)
     
-    # Create a blank dataframe
-    df = pd.DataFrame()
-    
-    for symbol in symbols:
-        try:
-            # Get all historical market data for all tickers
-            df_extra = get_stock_data(symbol)
-            
-            # Add an extra column to label the ticker
-            df_extra['Ticker'] = symbol
-            
-            # Concatenate all the piece
-            df = pd.concat([df,df_extra])
-        
-        except:
-            print(f'Ticker error:{symbol}')
-     
-    return df
+    print("MAE: %.4f" % MAE)
+    print("RMSE: %.4f" % RMSE)
+    print("R^2: %.4f" % R2)
 
 
 
@@ -143,8 +111,17 @@ def get_data(symbols):
 # 1
 def visualize_time_series(TS):
     '''
-    TS: Time Series
+    Visualize a time series. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
+    Input:
+    - TS: Time series
+    
+    Output:
+    - Time series plot
     '''
+
     TS.plot(figsize=(15,9))
     plt.title("Close")
     plt.ylabel("Price")
@@ -154,12 +131,17 @@ def visualize_time_series(TS):
 # 2a
 def stationary_check_statsmodels(TS, window_size):
     '''
-    statsmodels
+    Stationary check using statsmodels library. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
-    TS: Time Series
+    Inputs:
+    - TS: Time series
+    - window_size: integer
     
-    window_size: parameter for window
-    
+    Outputs:
+    - Plot of the original time series, rolling mean, rolling std
+    - Dickey-Fuller test statistic with p value shown
     '''
     
     # Rolling Statistics
@@ -199,9 +181,16 @@ def stationary_check_statsmodels(TS, window_size):
 # 2b    
 def stationary_check_pmdarima(TS):
     '''
-    pmdarima
-    TS: time series
+    Stationary check using pdmarima library. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
+    Input:
+    - TS: Time series
+    
+    Output:
+    - Dickey-Fuller test statistic with p value shown
+    - Whether or not shoud differencing
     '''
     
     adf_test = ADFTest(alpha=0.05)
@@ -213,12 +202,18 @@ def stationary_check_pmdarima(TS):
 # 3a
 def decomposition_plot_pmdarima(TS, frequency):
     '''
-    pmdarima
+    Decomposition plot using pdmarima library. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
-    TS: Time Series
+    Inputs:
+    - TS: Time series
+    - frequency: integer
     
-    frequency: parameter for m
+    Outputs:
+    - Decomposition plot showing the original time series, trend, seasonality, and residuals
     '''
+    
     # Use decompose function from pmdarima
     decomposed = decompose(TS.values, 'multiplicative', m=frequency)
                                       # use "multiplicative" when see an increasing trend
@@ -228,11 +223,16 @@ def decomposition_plot_pmdarima(TS, frequency):
 # 3b 
 def decomposition_plot_statsmodels(TS, frequency):
     '''
-    statsmodels
+    Decomposition plot using statsmodels library. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
-    TS: Time Series
+    Inputs:
+    - TS: Time series
+    - frequency: integer
     
-    frequency: parameter for freq
+    Outputs:
+    - Decomposition plot showing the original time series, trend, seasonality, and residuals
     '''
     
     decomposition = seasonal_decompose(TS, freq=frequency)
@@ -266,10 +266,17 @@ def decomposition_plot_statsmodels(TS, frequency):
 # 4a
 def detrend_transformation(TS, log=False, sqrt=False):
     '''
-    Log Transformation
+    Detrend time series data by using either log or square root transformation. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
-    Sqrt Transformation
+    Inputs:
+    - TS: Time series
+    - log: True for performing log transformtion
+    - sqrt: True for performing square root transformation
     
+    Return:
+    - Detrended time series
     '''
     
     if log == True:
@@ -287,10 +294,18 @@ def detrend_transformation(TS, log=False, sqrt=False):
 # 4b
 def detrend_rolling_mean(TS, regular=False, window_size=None, half_life=None):
     '''
-    Subtract rolling mean
+    Detrend time series by subtracting either the rolling mean or the weighted rolling mean. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
-    Subtranct exponential rolling mean
-    
+    Inputs:
+    - TS: Time series
+    - regular: True for using .rolling(), False for using .ewm()
+    - window_size: integer (applied if subtract rolling mean)
+    - half_life: integer (applied if subtract weighted rollingmean)
+
+    Return:
+    - Detrended time series
     '''
     
     if regular == True:
@@ -310,8 +325,16 @@ def detrend_rolling_mean(TS, regular=False, window_size=None, half_life=None):
 # 4c
 def detrend_differencing(TS, periods):
     '''
-    Just differencing method
+    Detrend time series by differencing. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
+    Inputs:
+    - TS: Time series
+    - periods: integer
+
+    Return:
+    - Detrended time series
     '''
     
     TS_diff = TS.diff(periods=periods)
@@ -321,27 +344,34 @@ def detrend_differencing(TS, periods):
 
 # 5a
 def plot_ACF_PACF(TS):
+    '''
+    Plot the autocorrelation and partial-autocorrelation of time series using statsmodels library.
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
+    Inputs:
+    - TS: Time series
+
+    Outputs:
+    - ACF and PACF
+    '''
+
     fig, (ax1, ax2) = plt.subplots(1,2, figsize=(18,4))
     plot_acf(TS, ax=ax1, lags=25)
     plot_pacf(TS, ax=ax2, lags=25)
 
 # 5b
 def pd_ACF(TS):
-    pd.plotting.autocorrelation_plot(TS)
+    '''
+    Plot the autocorrelation of time series using panda library 
 
-
-
-
-
-#########################
-#   Sklearn Evalution   #
-#########################
-
-def evaluate(y_true, y_pred):
-    MAE = mean_absolute_error(y_true, y_pred)
-    RMSE = mean_squared_error(y_true, y_pred, squared=False)
-    R2 = r2_score(y_true, y_pred)
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
-    print("MAE: %.4f" % MAE)
-    print("RMSE: %.4f" % RMSE)
-    print("R^2: %.4f" % R2)
+    Inputs:
+    - TS: Time series
+
+    Outputs:
+    - ACF and PACF
+    '''
+    
+    pd.plotting.autocorrelation_plot(TS)
