@@ -12,6 +12,10 @@
 # 4 - detrend method
 # 5 - ACF & PACF
 
+## LSTM ##
+
+## Classification ##
+
 
 
 
@@ -26,7 +30,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # sklearn
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score                                            # regression
+from sklearn.metrics import accuracy_score, classification_report, plot_confusion_matrix, roc_auc_score, plot_roc_curve  # classification
 
 # pmdarima
 import pmdarima as pm
@@ -78,9 +83,10 @@ def preprocess_df(df):
 #   Sklearn Evalution   #
 #########################
 
+
 def evaluate(y_true, y_pred):
     '''
-    Evaluate between true y and predicted y. 
+    Evaluate MAE, RMSE, R^2 between true y and predicted y.
 
     -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
@@ -99,6 +105,7 @@ def evaluate(y_true, y_pred):
     print("MAE: %.4f" % MAE)
     print("RMSE: %.4f" % RMSE)
     print("R^2: %.4f" % R2)
+
 
 
 
@@ -375,3 +382,145 @@ def pd_ACF(TS):
     '''
     
     pd.plotting.autocorrelation_plot(TS)
+
+
+
+
+
+#######################
+#   Classification    #
+#######################
+
+def evaluate_classification(model, X_train, y_train, X_test, y_test, use_decision_function='yes'):
+    '''
+    Evaluate a classfication model in terms of accuracy, and roc-auc-score.
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
+    Inputs:
+    - model: classification model name
+    - X_train, y_train, X_test,  y_test
+    - use_decision_function: yes, no, skip
+
+    Outputs:
+    - Train/Test accuracy, roc-auc score 
+    - classification report, confusion matrix, roc-curve
+    '''
+    
+    # accuracy
+    train_acc = []
+    test_acc = []
+    
+    # roc-auc score
+    train_roc_auc = []
+    test_roc_auc = []
+
+
+
+    # Prediction
+    y_train_pred = model.predict(X_train)
+    y_test_pred = model.predict(X_test)
+    
+    # Probabilities
+    if use_decision_function == 'skip': # skips calculating the roc_auc_score
+        train_score = False
+        test_score = False
+    
+    elif use_decision_function == 'yes': # not all classifiers have decision_function
+        train_score = model.decision_function(X_train)
+        test_score = model.decision_function(X_test)
+    
+    elif use_decision_function == 'no':
+        train_score = model.predict_proba(X_train)[:, 1] # proba for the 1 class
+        test_score = model.predict_proba(X_test)[:, 1]
+    
+    else:
+        raise Exception ("The value for use_decision_function should be 'skip', 'yes' or 'no'.")
+    
+
+    # Train
+    print("Train")
+    print("-*-*-*-*-*-*-*-*")
+    print(f"accuracy: {accuracy_score(y_train, y_train_pred):.4f}")
+    train_acc.append(round(accuracy_score(y_train, y_train_pred),4))
+    
+    if type(train_score) == np.ndarray:
+        print(f"roc-auc: {roc_auc_score(y_train, train_score):.4f}", "\n")
+    train_roc_auc.append(round(roc_auc_score(y_train, train_score), 4))
+
+
+    # Test
+    print("Test")
+    print("-*-*-*-*-*-*-*-*")
+    print(f"accuracy: {accuracy_score(y_test, y_test_pred):.4f}")
+    test_acc.append(round(accuracy_score(y_test, y_test_pred), 4))
+    
+    if type(test_score) == np.ndarray:
+        print(f"roc-auc: {roc_auc_score(y_test, test_score):.4f}")
+    test_roc_auc.append(round(roc_auc_score(y_test, test_score), 4))
+    
+    print("\n")
+
+    # Classification Report
+    print(classification_report(y_test, y_test_pred))
+
+    # Confusion Matrix
+    plot_confusion_matrix(model, X_test, y_test, cmap=plt.cm.Blues, values_format = '.0f')
+
+    # Plot ROC-curve
+    plot_roc_curve(model, X_test, y_test)
+
+    plt.show()
+
+    return train_acc, test_acc, train_roc_auc, test_roc_auc
+
+
+
+def model_comparison(model_results):
+    '''
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    '''
+    
+    new_model_results = []
+
+    # Change the tuple list to 1D list for each model and put the results in the new list
+    for result in model_results:
+        result = sum(result[:], []) # Change to 1D list
+        new_model_results.append(result)
+    
+
+    # Create a new df
+    model_comp_df = pd.DataFrame(columns=['train_acc', 'test_acc', 'acc_diff', 
+                                         'train_roc_auc', 'test_roc_auc', 'roc_auc_diff'],
+                                index=['Logistic Regression', 'KNN', 
+                                       'Random Forest', 'Bagging',
+                                       'XGBoost', 'AdaBoost', 'GradientBoost', 
+                                       'SVC', 'NuSVC'])
+    
+    # Append the new_models_results to the corresponding position in the df
+    for i in range(9): # total of 9 classifiers
+        # For each inner list, the...
+        # 1st element: train_acc
+        model_comp_df['train_acc'][i] = new_model_results[i][0]
+        
+        # 2nd element: test_acc
+        model_comp_df['test_acc'][i] = new_model_results[i][1]
+        
+        # 3rd element: train_roc_auc
+        model_comp_df['train_roc_auc'][i] = new_model_results[i][2]
+        
+        # 4th element: test_roc_auc
+        model_comp_df['test_roc_auc'][i] = new_model_results[i][3]
+    
+    # Calculate the difference between train-test metrics
+    model_comp_df['acc_diff'] = abs(model_comp_df['train_acc'] - model_comp_df['test_acc'])
+    model_comp_df['roc_auc_diff'] = abs(model_comp_df['train_roc_auc'] - model_comp_df['test_roc_auc'])
+
+    # Reset the index
+    model_comp_df.reset_index(inplace=True)
+
+    # Change the original "index" to "classifier"
+    model_comp_df.rename(columns={'index':'classifier'}, inplace=True)
+
+    
+    return model_comp_df
