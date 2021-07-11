@@ -2,8 +2,10 @@
 
 
 ## Preprocessing ##
+# - set the "Date" as the index column for a df
 
 ## Sklearn Evaluation ##
+# - MAE, RMSE, R^2
 
 ## ARIMA ##
 # 1 - visualize time series
@@ -13,8 +15,12 @@
 # 5 - ACF & PACF
 
 ## LSTM ##
+# 1 - LSTM model evaluation
+# 2 - plot true vs. prediction
 
 ## Classification ##
+# 1 - evaluate classification model
+# 2 - comparison df for different classification model
 
 
 
@@ -387,13 +393,85 @@ def pd_ACF(TS):
 
 
 
+##############
+#   LSTM   ###
+##############
+
+# 1
+def lstm_model_evaluation(model, X_train, y_train, X_val, y_val):
+    '''
+    Evaluate the LSTM model by using  prediction of y based on X.
+    Inverse transform for both the prediction y and actual y. 
+    
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+    Inputs:
+    - model: Time series model name
+    - X_train, y_train, X_val, y_val
+    
+    Outpus:
+    - Evalution results for true y and predicted y
+        - MAE, RMSE, and R^2
+    
+    Return:
+    - y_val_true, y_val_inv
+
+    '''
+    
+    # Make prediction
+    y_train_pred = model.predict(X_train)
+    y_val_pred = model.predict(X_val)
+    
+    # Inverse transform the prediction and actual
+    y_train_inv = scaler.inverse_transform(y_train_pred) # prediction
+    y_val_inv = scaler.inverse_transform(y_val_pred) # prediction
+
+    y_train_true = scaler.inverse_transform(y_train) # actual
+    y_val_true =scaler.inverse_transform(y_val) # actual
+    
+    # Use the evalute function from util pyfile
+    print("Train results: ")
+    print(ut.evaluate(y_train_true, y_train_inv))
+    print("\n")
+    print("Val results: ")
+    print(ut.evaluate(y_val_true, y_val_inv))
+
+    return y_val_true, y_val_inv
+
+
+# 2
+def lstm_plot_prediction(y_true, y_pred):
+    '''
+    Comparison plot of actual y and predicted y for LSTM model.
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
+    Inputs:
+    - y_true, y_pred: true y and predicted y
+    
+    Outpus:
+    - Scatter plot of true y and line plot of predicted y
+    '''
+
+    plt.figure(figsize=(20,10))
+    plt.plot(y_true, '.')
+    plt.plot(y_pred)
+    plt.legend(['Actual', 'Predicted'])
+    plt.show()
+
+
+
+
+
 #######################
 #   Classification    #
 #######################
 
-def evaluate_classification(model, X_train, y_train, X_test, y_test, use_decision_function='yes'):
+# 1
+def class_model_evaluation(model, X_train, y_train, X_test, y_test, use_decision_function='yes'):
     '''
     Evaluate a classfication model in terms of accuracy, and roc-auc-score.
+    Plot confusion matrix and roc-curve for test set.
 
     -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
@@ -405,6 +483,9 @@ def evaluate_classification(model, X_train, y_train, X_test, y_test, use_decisio
     Outputs:
     - Train/Test accuracy, roc-auc score 
     - classification report, confusion matrix, roc-curve
+
+    Return:
+    - train_acc, test_acc, train_roc_auc, test_roc_auc
     '''
     
     # accuracy
@@ -414,7 +495,6 @@ def evaluate_classification(model, X_train, y_train, X_test, y_test, use_decisio
     # roc-auc score
     train_roc_auc = []
     test_roc_auc = []
-
 
 
     # Prediction
@@ -461,6 +541,7 @@ def evaluate_classification(model, X_train, y_train, X_test, y_test, use_decisio
     
     print("\n")
 
+
     # Classification Report
     print(classification_report(y_test, y_test_pred))
 
@@ -476,9 +557,20 @@ def evaluate_classification(model, X_train, y_train, X_test, y_test, use_decisio
 
 
 
-def model_comparison(model_results):
+# 2
+def class_model_comparison(model_results):
     '''
+    Create a df to compare the different classification model reults based on 
+    train/test accuracy and roc-auc score
+
     -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+    Input:
+    - model_results: list contains different classification result
+
+    Return:
+    - model comparsion df
+
     '''
     
     new_model_results = []
