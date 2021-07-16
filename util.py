@@ -4,15 +4,17 @@
 ## Preprocessing ##
 # - set the "Date" as the index column for a df
 
+## Visualiza ##
+# - visualize time series
+
 ## Sklearn Evaluation ##
 # - MAE, RMSE, R^2
 
 ## ARIMA ##
-# 1 - visualize time series
-# 2 - stationary check
-# 3 - decompostion
-# 4 - detrend method
-# 5 - ACF & PACF
+# 1 - stationary check
+# 2 - decompostion
+# 3 - detrend method
+# 4 - ACF & PACF
 
 ## LSTM ##
 # 1 - LSTM model evaluation
@@ -85,6 +87,60 @@ def preprocess_df(df):
 
 
 
+#################
+#   Visualize   #
+#################
+
+# 1a
+def visualize_time_series(TS):
+    '''
+    Visualize a time series. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
+    Input:
+    - TS: Time series
+    
+    Output:
+    - Time series plot
+    '''
+
+    TS.plot(figsize=(15,9))
+    plt.title("Close")
+    plt.ylabel("Price")
+    plt.show()
+
+
+# 1b
+def visualize_train_val_test(train, val, test, title):
+    '''
+    Visualize a time series in train, validation and test set. 
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
+    Input:
+    - train: train set
+    - val: validation set
+    - test: test set
+    - title: ETF name in string format
+    
+    Output:
+    - Time series plot with train, val, test in different color
+    '''
+
+    plt.figure(figsize=(20,10))
+    train.plot()
+    val.plot()
+    test.plot()
+    plt.title(title)
+    plt.ylabel("Price")
+    plt.legend(['train', 'val', 'test'])
+    plt.show()
+
+
+
+
+
 #########################
 #   Sklearn Evalution   #
 #########################
@@ -121,27 +177,7 @@ def evaluate(y_true, y_pred):
 #   ARIMA   #
 #############
 
-# 1
-def visualize_time_series(TS):
-    '''
-    Visualize a time series. 
-
-    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-    
-    Input:
-    - TS: Time series
-    
-    Output:
-    - Time series plot
-    '''
-
-    TS.plot(figsize=(15,9))
-    plt.title("Close")
-    plt.ylabel("Price")
-    plt.show()
-
-
-# 2a
+# 1a
 def stationary_check_statsmodels(TS, window_size):
     '''
     Stationary check using statsmodels library. 
@@ -191,7 +227,7 @@ def stationary_check_statsmodels(TS, window_size):
     print('Results of Dickey-Fuller test: \n')
     print(dfoutput)
   
-# 2b    
+# 1b    
 def stationary_check_pmdarima(TS):
     '''
     Stationary check using pdmarima library. 
@@ -212,7 +248,7 @@ def stationary_check_pmdarima(TS):
     print(f"P-Value: {p_val}, so should you difference the data? {should_diff}")
 
     
-# 3a
+# 2a
 def decomposition_plot_pmdarima(TS, frequency):
     '''
     Decomposition plot using pdmarima library. 
@@ -233,7 +269,7 @@ def decomposition_plot_pmdarima(TS, frequency):
     # Plot the decomposition plot
     decomposed_plot(decomposed, figure_kwargs={'figsize': (12,10)})
     
-# 3b 
+# 2b 
 def decomposition_plot_statsmodels(TS, frequency):
     '''
     Decomposition plot using statsmodels library. 
@@ -276,7 +312,7 @@ def decomposition_plot_statsmodels(TS, frequency):
     plt.tight_layout()
 
 
-# 4a
+# 3a
 def detrend_transformation(TS, log=False, sqrt=False):
     '''
     Detrend time series data by using either log or square root transformation. 
@@ -304,7 +340,7 @@ def detrend_transformation(TS, log=False, sqrt=False):
         print("Error")
         return None
         
-# 4b
+# 3b
 def detrend_rolling_mean(TS, regular=False, window_size=None, half_life=None):
     '''
     Detrend time series by subtracting either the rolling mean or the weighted rolling mean. 
@@ -335,7 +371,7 @@ def detrend_rolling_mean(TS, regular=False, window_size=None, half_life=None):
         TS_minus_exp_rolling_mean.dropna(inplace=True)
         return TS_minus_exp_rolling_mean
     
-# 4c
+# 3c
 def detrend_differencing(TS, periods):
     '''
     Detrend time series by differencing. 
@@ -355,7 +391,7 @@ def detrend_differencing(TS, periods):
     return TS_diff
 
 
-# 5a
+# 4a
 def plot_ACF_PACF(TS):
     '''
     Plot the autocorrelation and partial-autocorrelation of time series using statsmodels library.
@@ -373,7 +409,7 @@ def plot_ACF_PACF(TS):
     plot_acf(TS, ax=ax1, lags=25)
     plot_pacf(TS, ax=ax2, lags=25)
 
-# 5b
+# 4b
 def pd_ACF(TS):
     '''
     Plot the autocorrelation of time series using panda library 
@@ -398,7 +434,7 @@ def pd_ACF(TS):
 ##############
 
 # 1
-def lstm_model_evaluation(model, X_train, y_train, X_val, y_val):
+def lstm_model_evaluation(model, scaler, X_train, y_train, X_val, y_val):
     '''
     Evaluate the LSTM model by using  prediction of y based on X.
     Inverse transform for both the prediction y and actual y. 
@@ -407,6 +443,7 @@ def lstm_model_evaluation(model, X_train, y_train, X_val, y_val):
 
     Inputs:
     - model: Time series model name
+    - scaler: instantiate scaler
     - X_train, y_train, X_val, y_val
     
     Outpus:
@@ -431,10 +468,10 @@ def lstm_model_evaluation(model, X_train, y_train, X_val, y_val):
     
     # Use the evalute function from util pyfile
     print("Train results: ")
-    print(ut.evaluate(y_train_true, y_train_inv))
+    print(evaluate(y_train_true, y_train_inv))
     print("\n")
     print("Val results: ")
-    print(ut.evaluate(y_val_true, y_val_inv))
+    print(evaluate(y_val_true, y_val_inv))
 
     return y_val_true, y_val_inv
 
