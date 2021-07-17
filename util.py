@@ -92,7 +92,7 @@ def preprocess_df(df):
 #################
 
 # 1a
-def visualize_time_series(TS):
+def visualize_time_series(TS, title):
     '''
     Visualize a time series. 
 
@@ -106,7 +106,7 @@ def visualize_time_series(TS):
     '''
 
     TS.plot(figsize=(15,9))
-    plt.title("Close")
+    plt.title(title, fontsize=16)
     plt.ylabel("Price")
     plt.show()
 
