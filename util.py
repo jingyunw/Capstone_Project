@@ -504,52 +504,52 @@ def lstm_plot_prediction(y_true, y_pred):
 #   Classification    #
 #######################
 
-# 1
-def class_model_evaluation(model, X_train, y_train, X_test, y_test, use_decision_function='yes'):
+# 1a
+def class_model_evaluation(model, X_train, y_train, X_val, y_val, use_decision_function='yes'):
     '''
     Evaluate a classfication model in terms of accuracy, and roc-auc-score.
-    Plot confusion matrix and roc-curve for test set.
+    Plot confusion matrix and roc-curve for validation set.
 
     -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     
     Inputs:
     - model: classification model name
-    - X_train, y_train, X_test,  y_test
+    - X_train, y_train, X_val,  y_val
     - use_decision_function: yes, no, skip
 
     Outputs:
-    - Train/Test accuracy, roc-auc score 
+    - Train/Val accuracy, roc-auc score 
     - classification report, confusion matrix, roc-curve
 
     Return:
-    - train_acc, test_acc, train_roc_auc, test_roc_auc
+    - train_acc, val_acc, train_roc_auc, test_roc_auc
     '''
     
     # accuracy
     train_acc = []
-    test_acc = []
+    val_acc = []
     
     # roc-auc score
     train_roc_auc = []
-    test_roc_auc = []
+    val_roc_auc = []
 
 
     # Prediction
     y_train_pred = model.predict(X_train)
-    y_test_pred = model.predict(X_test)
+    y_val_pred = model.predict(X_val)
     
     # Probabilities
     if use_decision_function == 'skip': # skips calculating the roc_auc_score
         train_score = False
-        test_score = False
+        val_score = False
     
     elif use_decision_function == 'yes': # not all classifiers have decision_function
         train_score = model.decision_function(X_train)
-        test_score = model.decision_function(X_test)
+        val_score = model.decision_function(X_val)
     
     elif use_decision_function == 'no':
         train_score = model.predict_proba(X_train)[:, 1] # proba for the 1 class
-        test_score = model.predict_proba(X_test)[:, 1]
+        val_score = model.predict_proba(X_val)[:, 1]
     
     else:
         raise Exception ("The value for use_decision_function should be 'skip', 'yes' or 'no'.")
@@ -566,18 +566,75 @@ def class_model_evaluation(model, X_train, y_train, X_test, y_test, use_decision
     train_roc_auc.append(round(roc_auc_score(y_train, train_score), 4))
 
 
+    # Val
+    print("Val")
+    print("-*-*-*-*-*-*-*-*")
+    print(f"accuracy: {accuracy_score(y_val, y_val_pred):.4f}")
+    val_acc.append(round(accuracy_score(y_val, y_val_pred), 4))
+    
+    if type(val_score) == np.ndarray:
+        print(f"roc-auc: {roc_auc_score(y_val, val_score):.4f}")
+    val_roc_auc.append(round(roc_auc_score(y_val, val_score), 4))
+    
+    print("\n")
+
+
+    # Classification Report
+    print(classification_report(y_val, y_val_pred))
+
+    # Confusion Matrix
+    plot_confusion_matrix(model, X_val, y_val, cmap=plt.cm.Blues, values_format = '.0f')
+
+    # Plot ROC-curve
+    plot_roc_curve(model, X_val, y_val)
+
+    plt.show()
+
+    return train_acc, val_acc, train_roc_auc, val_roc_auc
+
+
+
+# 1b
+def class_evaluate(model, X_test, y_test, use_decision_function='yes'):
+    '''
+    Evaluate the best classfication model in terms of accuracy, and roc-auc-score.
+    Plot confusion matrix and roc-curve for hold out test set only.
+
+    -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    
+    Inputs:
+    - model: best classification model name
+    - X_test,  y_test
+    - use_decision_function: yes, no, skip
+
+    Outputs:
+    - Test accuracy, roc-auc score 
+    - classification report, confusion matrix, roc-curve
+
+    '''
+    # Prediction
+    y_test_pred = model.predict(X_test)
+    
+    # Probabilities
+    if use_decision_function == 'skip': # skips calculating the roc_auc_score
+        test_score = False
+    
+    elif use_decision_function == 'yes': # not all classifiers have decision_function
+        test_score = model.decision_function(X_test)
+    
+    elif use_decision_function == 'no':
+        test_score = model.predict_proba(X_test)[:, 1]
+    
+    else:
+        raise Exception ("The value for use_decision_function should be 'skip', 'yes' or 'no'.")
+
     # Test
     print("Test")
     print("-*-*-*-*-*-*-*-*")
     print(f"accuracy: {accuracy_score(y_test, y_test_pred):.4f}")
-    test_acc.append(round(accuracy_score(y_test, y_test_pred), 4))
     
     if type(test_score) == np.ndarray:
         print(f"roc-auc: {roc_auc_score(y_test, test_score):.4f}")
-    test_roc_auc.append(round(roc_auc_score(y_test, test_score), 4))
-    
-    print("\n")
-
 
     # Classification Report
     print(classification_report(y_test, y_test_pred))
@@ -589,8 +646,6 @@ def class_model_evaluation(model, X_train, y_train, X_test, y_test, use_decision
     plot_roc_curve(model, X_test, y_test)
 
     plt.show()
-
-    return train_acc, test_acc, train_roc_auc, test_roc_auc
 
 
 
@@ -619,8 +674,8 @@ def class_model_comparison(model_results):
     
 
     # Create a new df
-    model_comp_df = pd.DataFrame(columns=['train_acc', 'test_acc', 'acc_diff', 
-                                         'train_roc_auc', 'test_roc_auc', 'roc_auc_diff'],
+    model_comp_df = pd.DataFrame(columns=['train_acc', 'val_acc', 'acc_diff', 
+                                         'train_roc_auc', 'val_roc_auc', 'roc_auc_diff'],
                                 index=['Logistic Regression', 'KNN', 
                                        'Random Forest', 'Bagging',
                                        'XGBoost', 'AdaBoost', 'GradientBoost', 
@@ -633,17 +688,17 @@ def class_model_comparison(model_results):
         model_comp_df['train_acc'][i] = new_model_results[i][0]
         
         # 2nd element: test_acc
-        model_comp_df['test_acc'][i] = new_model_results[i][1]
+        model_comp_df['val_acc'][i] = new_model_results[i][1]
         
         # 3rd element: train_roc_auc
         model_comp_df['train_roc_auc'][i] = new_model_results[i][2]
         
         # 4th element: test_roc_auc
-        model_comp_df['test_roc_auc'][i] = new_model_results[i][3]
+        model_comp_df['val_roc_auc'][i] = new_model_results[i][3]
     
     # Calculate the difference between train-test metrics
-    model_comp_df['acc_diff'] = abs(model_comp_df['train_acc'] - model_comp_df['test_acc'])
-    model_comp_df['roc_auc_diff'] = abs(model_comp_df['train_roc_auc'] - model_comp_df['test_roc_auc'])
+    model_comp_df['acc_diff'] = abs(model_comp_df['train_acc'] - model_comp_df['val_acc'])
+    model_comp_df['roc_auc_diff'] = abs(model_comp_df['train_roc_auc'] - model_comp_df['val_roc_auc'])
 
     # Reset the index
     model_comp_df.reset_index(inplace=True)
