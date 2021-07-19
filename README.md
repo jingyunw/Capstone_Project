@@ -10,7 +10,7 @@ This project explored on how to use machine learning modeling to predict future 
 ...
 
 ## Data
-The historical price data from [Yahoo Finance](/https://finance.yahoo.com/) are free to acquire through [yfinance API](/https://pypi.org/project/yfinance/). Here, I focused on <b>REIT ETFs</b> (Real Estate Investment Trust Exchange-Traded Funds). [Top 28 REIT ETFs](/https://etfdb.com/etfdb-category/real-estate/) ticker names are selected for further analysis. The last date for all ETFs is 06/23/2021. 
+The historical price data from [Yahoo Finance](https://finance.yahoo.com/) are free to acquire through [yfinance API](https://pypi.org/project/yfinance/). Here, I focused on <b>REIT ETFs</b> (Real Estate Investment Trust Exchange-Traded Funds). [Top 28 REIT ETFs](https://etfdb.com/etfdb-category/real-estate/) ticker names are selected for further analysis. The last date for all ETFs is 06/23/2021. 
 
 ## Methods
 A variety of preprocessing steps was applied to different modeling technique. For regression 
@@ -74,11 +74,11 @@ For additional information please contact, JingYun (Jonna) Wang at jingyunwang24
 ├── images
 ├── models
 ├── notebook
-│   ├── 01
-│   ├── 02
-│   ├── 03
-│   ├── 04
-│   └── 05
+│   ├── 1_Fetch_Data.ipynb
+│   ├── 2_ARIMA.ipynb
+│   ├── 3_FBProphet.ipynb
+│   ├── 4_LSTM.ipynb
+│   └── 5_Classification.ipynb
 ├── Notebook.ipynb
 ├── Presentation.pdf
 ├── README.md
