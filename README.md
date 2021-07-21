@@ -13,7 +13,7 @@ This project uses a regression model for forecasting future prices and a classif
 ## Business Problem
 ### Motivation
 Invest in real estate over long term could offer a reliable stream of income. This could also offer the benefit of tax reduction, direct ownership, potential growth of net worth, and so on. But those benefits come with a lot of hands-on responsibilities. Invest in REIT ETFs (Real Estate Investment Trust Exchange-Traded Funds) offer a low investment requirement and hands-off (but less control) way to earn dividends quarterly by purchasing baskets of stocks.
-***
+
 ### Goal
 Predict future price and trend through machine learning.
 
@@ -25,7 +25,7 @@ The historical price data from [Yahoo Finance](https://finance.yahoo.com/) are f
 
 
 ## Methods
-The initial approach was performed on VNQ time series. Train-val-test split was performed. Training set served as the learning step, validation set served as the model tuning, and test set was used only once to see how well the model performes on unseen data.
+The initial approach was performed on VNQ time series. Train-val-test split was performed. Training set served as the learning step, validation set served as the model tuning, and test set (contains 22 days from 5/24/2021 to 6/23/2021) was used only once to see how well the model performes on unseen data.
 
 ***
 
@@ -55,22 +55,17 @@ Logistic Regression (baseline), KNN, Random Forest, Bagging, XGBoost, AdaBoost, 
 
 
 ## Model Evaluation
-The best performance LSTM and NuSVC models were applied on the rest of 14 REIT ETFs to see if they're generalizable.
+The best performance LSTM and NuSVC models were applied on the rest of <b>*14* </b>REIT ETFs to see if they're generalizable. Full visualization result can be viewed in the [Notebook](./Notebook.ipynb)
 
 
 ## Results
-Evaluation on holdout test set for 15 REIT ETFs.
-
-
-
-
-
+Evaluation on holdout test set for VNQ, IYR, REM, and REK.
+<img src="images/vnq_iyr_rem_rek_REG.png">
+<img src="images/vnq_iyr_rem_rek_CLASS.png">
 
 
 ## Conclusion
 By analyzing and building models on VNQ time series, LSTM model was selected for regression and NuSVC model was selected for classification. Both models were applied to the rest of the 14 REIT ETFs to see how the model is generalizable for different time series. LSTM is a good fit for price prediction no matter the time series has either an increasing trend or a decreasing trend. NuSVC is more like to fit for time series which have a closer price range with VNQ.
-
-***
 
 ### Recommendation
 - <b>Update</b>: Update the model periodically so that the model can learn new pattern
