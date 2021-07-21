@@ -21,36 +21,45 @@ Predict future price and trend through machine learning.
 ## Data
 The historical price data from [Yahoo Finance](https://finance.yahoo.com/) are free to acquire through [yfinance API](https://pypi.org/project/yfinance/). Here, I focused on [Top REIT ETFs](https://etfdb.com/etfdb-category/real-estate/) for further analysis. The last date for all ETFs was 06/23/2021.
 
+<img src="images/15_close.png">
+
 
 ## Methods
-Regression and classification models were built on VNQ. Train-val-test split was performed to evaluate machine learning performance. Both models were applied to the rest of the 14 REIT ETFs to see how the model is generalizable for different time series.
+The initial approach was performed on VNQ time series. Train-val-test split was performed. Training set served as the learning step, validation set served as the model tuning, and test set was used only once to see how well the model performes on unseen data.
+
+***
 
 ### Regression: 
-1. [ARIMA](./notebook/2_ARIMA.ipynb)
-2. [FBProphet](./notebook/3_FBProphet.ipynb)
-3. [LSTM](./notebook/4_LSTM.ipynb)
+ARIMA, FBProphet, and LSTM models were used for prediciting future closing price. By comparing the test result, LSTM was selected as the best performing regressio model.
+
+|  Model | MAE | RMSE | R2 | Choice |
+| :---: | :---: |:---: | :---: |:---: | 
+| ARIMA | 4.6429 | 5.0535 | -4.9348 |  |
+| FBProphet | 14.0614 | 14.1760 | -51.0399 |  |
+| LSTM | 0.7419 | 0.9534 | 0.7756 | ✓ |
+
+- [ARIMA](./notebook/2_ARIMA.ipynb)
+- [FBProphet](./notebook/3_FBProphet.ipynb)
+- [LSTM](./notebook/4_LSTM.ipynb)
 
 ***
 
 ### Classification:
 [Classifier](./notebook/5_Classification.ipynb)</br>
-Logistic Regression, KNN, Random Forest, Bagging, XGBoost, AdaBoost, Gradient Boosting, SVC, NuSVC 
 
-
-## Model Evaluation
-Best Performance Model
-|  Model | MAE | RMSE | R^2 | Choice |
-| :---: | :---: |:---: | :---: | :---: | 
-| LSTM | 0.7419 | 0.9534 | 0.7756| ✓ |
-
+Logistic Regression (baseline), KNN, Random Forest, Bagging, XGBoost, AdaBoost, Gradient Boosting, SVC, and NuSVC were used for predicting future uptrend/downtrend. By comparing the test result, NuSVCwas selected as the best performing regressio model. 
 
 |  Model | Accuracy | F1(0) | F1(1) | Choice |
 | :---: | :---: |:---: | :---: |:---: |
 | NuSVC | 0.9091 | 0.90 | 0.92 | ✓ |
 
 
+## Model Evaluation
+The best performance LSTM and NuSVC models were applied on the rest of 14 REIT ETFs to see if they're generalizable.
+
+
 ## Results
-...
+Evaluation on holdout test set for 15 REIT ETFs.
 
 
 
@@ -59,9 +68,10 @@ Best Performance Model
 
 
 ## Conclusion
-By analyzing VNQ time series, the LSTM model was selected for regression and the NuSVC model was selected for classification. Both models were applied to the rest of the 14 REIT ETFs to see how the model is generalizable for different time series. LSTM is a good fit for price prediction no matter the time series has either an increasing trend or a decreasing trend. NuSVC is more like to fit for time series which have a closer price range with VNQ.
+By analyzing and building models on VNQ time series, LSTM model was selected for regression and NuSVC model was selected for classification. Both models were applied to the rest of the 14 REIT ETFs to see how the model is generalizable for different time series. LSTM is a good fit for price prediction no matter the time series has either an increasing trend or a decreasing trend. NuSVC is more like to fit for time series which have a closer price range with VNQ.
 
 ***
+
 ### Recommendation
 - <b>Update</b>: Update the model periodically so that the model can learn new pattern
 
