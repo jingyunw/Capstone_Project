@@ -477,7 +477,7 @@ def lstm_model_evaluation(model, scaler, X_train, y_train, X_val, y_val):
 
 
 # 2
-def lstm_plot_prediction(y_true, y_pred):
+def lstm_plot_prediction(y_true, y_pred, ticker_name):
     '''
     Comparison plot of actual y and predicted y for LSTM model.
 
@@ -493,6 +493,7 @@ def lstm_plot_prediction(y_true, y_pred):
     plt.figure(figsize=(20,10))
     plt.plot(y_true, '.')
     plt.plot(y_pred)
+    plt.title(ticker_name)  # this line is for Notebook.ipynb
     plt.legend(['Actual', 'Predicted'])
     plt.show()
 
@@ -641,7 +642,7 @@ def class_evaluate(model, X_test, y_test, use_decision_function='yes'):
 
     # Confusion Matrix
     plot_confusion_matrix(model, X_test, y_test, cmap=plt.cm.Blues, values_format = '.0f')
-
+    
     # Plot ROC-curve
     plot_roc_curve(model, X_test, y_test)
 
