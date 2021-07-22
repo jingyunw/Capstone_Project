@@ -493,7 +493,7 @@ def lstm_plot_prediction(y_true, y_pred, ticker_name):
     plt.figure(figsize=(20,10))
     plt.plot(y_true, '.')
     plt.plot(y_pred)
-    plt.title(ticker_name)  # this line is for Notebook.ipynb
+    plt.title(ticker_name, fontsize=16)  # this line is for Notebook.ipynb
     plt.legend(['Actual', 'Predicted'])
     plt.show()
 
@@ -584,7 +584,7 @@ def class_model_evaluation(model, X_train, y_train, X_val, y_val, use_decision_f
     print(classification_report(y_val, y_val_pred))
 
     # Confusion Matrix
-    plot_confusion_matrix(model, X_val, y_val, cmap=plt.cm.Blues, values_format = '.0f')
+    plot_confusion_matrix(model, X_val, y_val, cmap=plt.cm.Greens, values_format = '.0f')
 
     # Plot ROC-curve
     plot_roc_curve(model, X_val, y_val)
@@ -641,7 +641,7 @@ def class_evaluate(model, X_test, y_test, use_decision_function='yes'):
     print(classification_report(y_test, y_test_pred))
 
     # Confusion Matrix
-    plot_confusion_matrix(model, X_test, y_test, cmap=plt.cm.Blues, values_format = '.0f')
+    plot_confusion_matrix(model, X_test, y_test, cmap=plt.cm.Greens, values_format = '.0f')
     
     # Plot ROC-curve
     plot_roc_curve(model, X_test, y_test)
