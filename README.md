@@ -1,8 +1,6 @@
 # REIT ETFs Forecasting
 Author: [JingYun (Jonna) Wang](/jingyunwang24@gmail.com)
 
-🌻 Currently working on it. 🌻
-
 <img src="images/stock.jpeg">
 
 
