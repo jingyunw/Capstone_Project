@@ -7,19 +7,19 @@ Author: [JingYun (Jonna) Wang](/jingyunwang24@gmail.com)
 
 
 ## Overview
-This project uses a regression model for forecasting future prices and a classification model to predict the trend for REIT ETFs. The historical data acquired from Yahoo Finance contains up-to-date price information. Potential investors can use my models to predict both future prices and trends.
+This project is for all who want to increase the diversity of investment products. I used a regression model to predict future prices and a classification model to predict the movement for REIT ETFs. The historical data acquired from Yahoo Finance contains up-to-date price information. Potential investors can use my models to analyze REIT ETFs through technical perspectives.
 
 
 ## Business Problem
 ### Motivation
-Invest in real estate over long term could offer a reliable stream of income. This could also offer the benefit of tax reduction, direct ownership, potential growth of net worth, and so on. But those benefits come with a lot of hands-on responsibilities. Invest in REIT ETFs (Real Estate Investment Trust Exchange-Traded Funds) offer a low investment requirement and hands-off (but less control) way to earn dividends quarterly by purchasing baskets of stocks.
+Many investors know that put money in real estate over long term could offer a reliable stream of income. This could also offer the benefit of tax reduction, direct ownership, potential growth of net worth, and so on. But those benefits accompany a lot of hands-on responsibilities. Before someone has a rental property, an upfront capital makes many investors unable to afford it. Invest in REIT ETFs (Real Estate Investment Trust Exchange-Traded Funds) offer a low investment requirement and hands-off way to earn dividends quarterly by purchasing baskets of stocks. But keep in mind, like other stock products, ETFs are also volatile, and have a strong correlation with the market. 
 
 ### Goal
-Predict future price and trend through machine learning.
+Predict future price and movement through machine learning.
 
 
 ## Data
-The historical price data from [Yahoo Finance](https://finance.yahoo.com/) are free to acquire through [yfinance API](https://pypi.org/project/yfinance/). Here, I focused on [Top REIT ETFs](https://etfdb.com/etfdb-category/real-estate/) for further analysis. The last date for all ETFs was 06/23/2021.
+The historical price data from [Yahoo Finance](https://finance.yahoo.com/) are free to acquire through [yfinance API](https://pypi.org/project/yfinance/). Here, I focused on [Top REIT ETFs](https://etfdb.com/etfdb-category/real-estate/) for further analysis. The last date for all fetched ETFs was 06/23/2021.
 
 <img src="images/15_close.png">
 
@@ -30,7 +30,7 @@ The initial approach was performed on VNQ time series. Train-val-test split was 
 ***
 
 ### Regression: 
-ARIMA, FBProphet, and LSTM models were used for prediciting future closing price. By comparing the test result, LSTM was selected as the best performing regressio model.
+ARIMA, FBProphet, and LSTM models were used for prediciting future closing price. By comparing the test result, LSTM was selected as the best performing regression model.
 
 |  Model | MAE | RMSE | R2 | Choice |
 | :---: | :---: |:---: | :---: |:---: | 
@@ -47,7 +47,7 @@ ARIMA, FBProphet, and LSTM models were used for prediciting future closing price
 ### Classification:
 [Classifier](./notebook/5_Classification.ipynb)</br>
 
-Logistic Regression (baseline), KNN, Random Forest, Bagging, XGBoost, AdaBoost, Gradient Boosting, SVC, and NuSVC were used for predicting future uptrend/downtrend. By comparing the test result, NuSVCwas selected as the best performing regressio model. 
+Logistic Regression (baseline), KNN, Random Forest, Bagging, XGBoost, AdaBoost, Gradient Boosting, SVC, and NuSVC were used for predicting future uptrend/downtrend. By comparing the test result, NuSVCwas selected as the best performing regression model. 
 
 |  Model | Accuracy | F1(0) | F1(1) | Choice |
 | :---: | :---: |:---: | :---: |:---: |
@@ -60,19 +60,24 @@ The best performance LSTM and NuSVC models were applied on the rest of <b>*14* <
 
 ## Results
 Evaluation on holdout test set for VNQ, IYR, REM, and REK.
+
+### Why select these 4?
+For better interpretation, please refer to the "close price" plot shown above. The initial approach was performed on VNQ. IYR has a similar price range and trend to VNQ. REM has a slightly different trend from VNQ, and the price range for REM is far away from VNQ. REK has a totally different price range and trend from VNQ.
+
 <img src="images/vnq_iyr_rem_rek_REG.png">
-<img src="images/vnq_iyr_rem_rek_CLASS.png">
+<img src="images/vnq_iyr_CM_PP.png">
+<img src="images/rem_rek_CM_PP.png">
 
 
 ## Conclusion
-By analyzing and building models on VNQ time series, LSTM model was selected for regression and NuSVC model was selected for classification. Both models were applied to the rest of the 14 REIT ETFs to see how the model is generalizable for different time series. LSTM is a good fit for price prediction no matter the time series has either an increasing trend or a decreasing trend. NuSVC is more like to fit for time series which have a closer price range with VNQ.
-
-### Recommendation
-- <b>Update</b>: Update the model periodically so that the model can learn new pattern
+By analyzing and building models on VNQ time series, LSTM model was selected for regression and NuSVC model was selected for classification. Both models were applied to the rest of the 14 REIT ETFs to see how the model is generalizable for different time series. 
+- Regardless the time series has an upward trend or a downward trend, or even a different price range, LSTM is a good fit for price forecasting. This could be due to the nature of LSTM. LSTM chooses to remember relevant information and forget irrelevant during sequences processing
+- NuSVC is more suitable some time series. This could be due to the nature of NuSVC classifier. For binary classification, NuSVC creates a hyperplane to separate different classes. Those have a closer price range with VNQ are more likely to generate good results. In contrast, those price range far away from VNQ generate results that could below the expectation
 
 
 ## Future Work
 Further analysis can be explored on the following to provide additional insights and improve the model performance.
+- <b>Model Variety</b>: Create different clasification models for different price ranges
 - <b>Buy/Hold/Sell</b>: Create an alert when the prediction reaches certain point
 - <b>Market Sentiment</b>: Web scrapping on social media to gather market information 
 - <b>Extensive application</b>: Further develop models for other investment products with time series based
