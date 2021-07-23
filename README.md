@@ -63,14 +63,26 @@ Evaluation on holdout test set for VNQ, IYR, REM, and REK.
 For better understanding, please refer to the "close price" plot shown above. The initial approach was performed on VNQ. IYR has a similar price range and trend to VNQ. REM has a less skew trend from VNQ, and the price range for REM is far away from VNQ. REK has a totally different price range and trend from VNQ.
 
 <img src="images/vnq_iyr_rem_rek_REG.png">
+
+- LSTM model did well on VNQ, IYR, and REM
+- For REK, although the regression line did not stay within the data points, it tracked the trend at a slightly higher price
+
 <img src="images/vnq_iyr_CM_PP.png">
+
+- Both VNQ and IYR have less false positive and false negatives
+- The prediction probability is close to either 0 or 1
+
 <img src="images/rem_rek_CM_PP.png">
+
+- REM's prediction result is acceptable, but the prediction probability indicated that the NuSVC model is less dedicated to its decision since the probability was close to 0.5
+- REK's prediction result is below expectation. The prediction probability of REK maintained the same for all test point
+
 
 
 ## Conclusion
 By analyzing and building models on VNQ time series, LSTM model was selected for regression and NuSVC model was selected for classification. Both models were applied to the rest of the 14 REIT ETFs to see how the model is generalizable for different time series. 
 - Regardless the time series has an upward trend or a downward trend, or even a different price range, LSTM is a good fit for price forecasting. This could be due to the nature of LSTM. LSTM chooses to remember relevant information and forget irrelevant during sequences processing
-- NuSVC is more suitable some time series. This could be due to the nature of NuSVC classifier. For binary classification, NuSVC creates a hyperplane to separate different classes. Those have a closer price range with VNQ are more likely to generate good results. In contrast, those price range far away from VNQ generate results that could below the expectation
+- NuSVC is more suitable for time series with similar trend and closer price range with VNQ. This could be due to the nature of NuSVC classifier. For binary classification, NuSVC creates a hyperplane to separate different classes. Those have a closer price range with VNQ are more likely to generate good results. In contrast, those price range far away from VNQ generate results that could below the expectation
 
 
 ## Future Work
