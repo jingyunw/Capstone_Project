@@ -60,7 +60,7 @@ The best performance LSTM and NuSVC models were applied on the rest of <b>*14* <
 Evaluation on holdout test set for VNQ, IYR, REM, and REK.
 
 ### Why select these 4?
-For better interpretation, please refer to the "close price" plot shown above. The initial approach was performed on VNQ. IYR has a similar price range and trend to VNQ. REM has a slightly different trend from VNQ, and the price range for REM is far away from VNQ. REK has a totally different price range and trend from VNQ.
+For better understanding, please refer to the "close price" plot shown above. The initial approach was performed on VNQ. IYR has a similar price range and trend to VNQ. REM has a slightly different trend from VNQ, and the price range for REM is far away from VNQ. REK has a totally different price range and trend from VNQ.
 
 <img src="images/vnq_iyr_rem_rek_REG.png">
 <img src="images/vnq_iyr_CM_PP.png">
